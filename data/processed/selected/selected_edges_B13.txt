@@ -1,0 +1,13 @@
+edge:22690112
+edge:22740417#4
+edge:22740446#4
+edge:30917843#4
+edge:542415708#3
+edge:669284463
+edge:669871301#0
+edge:92848448#1.135
+edge:E10
+edge:E14
+edge:E19
+edge:E37
+edge:E4

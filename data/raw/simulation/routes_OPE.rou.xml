@@ -1,0 +1,196 @@
+<routes>
+    <!-- Tipo de vehículo: puedes ajustarlo a lo que quieras -->
+    <vType id="car" accel="2.0" decel="4.5" sigma="0.5"
+           length="5.0" maxSpeed="13.9" color="1,0,0"/>
+
+    <!-- Ruta larga original -->
+    <route id="r_embarque_t"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 669284465 22689399#1 22689399#2 22689399#3 669284459 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP16" type="car" route="r_embarque_t" depart="0">
+        <stop parkingArea="pa_7" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP17" type="car" route="r_embarque_t" depart="30">
+        <stop parkingArea="pa_7" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP18" type="car" route="r_embarque_t" depart="60">
+        <stop parkingArea="pa_7" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP19" type="car" route="r_embarque_t" depart="90">
+        <stop parkingArea="pa_7" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP20" type="car" route="r_embarque_t" depart="120">
+        <stop parkingArea="pa_7" duration="1800"/>
+    </vehicle>
+
+    <!-- Ruta Galera 1 -->
+    <route id="r_g1t"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 626699047.59 626699047.67 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 E14 E15 E16 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP21" type="car" route="r_g1t" depart="150">
+        <stop parkingArea="pa_5" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP22" type="car" route="r_g1t" depart="180">
+        <stop parkingArea="pa_5" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP23" type="car" route="r_g1t" depart="210">
+        <stop parkingArea="pa_5" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP24" type="car" route="r_g1t" depart="240">
+        <stop parkingArea="pa_5" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP25" type="car" route="r_g1t" depart="270">
+        <stop parkingArea="pa_5" duration="1800"/>
+    </vehicle>
+
+    <!-- Ruta Galera 2 -->
+    <route id="r_g2t"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 626699047.59 626699047.67 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 E17 E18 E19 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP26" type="car" route="r_g2t" depart="300">
+        <stop parkingArea="pa_4" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP27" type="car" route="r_g2t" depart="330">
+        <stop parkingArea="pa_4" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP28" type="car" route="r_g2t" depart="360">
+        <stop parkingArea="pa_4" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP29" type="car" route="r_g2t" depart="390">
+        <stop parkingArea="pa_4" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP30" type="car" route="r_g2t" depart="420">
+        <stop parkingArea="pa_4" duration="1800"/>
+    </vehicle>
+
+    <!-- Ruta Galera 3 -->
+    <route id="r_g3t"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 626699047.59 626699047.67 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP31" type="car" route="r_g3t" depart="450">
+        <stop parkingArea="pa_3" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP32" type="car" route="r_g3t" depart="480">
+        <stop parkingArea="pa_3" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP33" type="car" route="r_g3t" depart="510">
+        <stop parkingArea="pa_3" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP34" type="car" route="r_g3t" depart="540">
+        <stop parkingArea="pa_3" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP35" type="car" route="r_g3t" depart="570">
+        <stop parkingArea="pa_3" duration="1800"/>
+    </vehicle>
+
+
+
+    <!-- ruta que llega hasta el parking en E3 (Llano amarillo 1) -->
+    <route id="r_parking_la1"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 E0 -542415699#3.55 -542415699#2 -542415699#1 E20 E21 E2 E3 E4 E23 E24 E25 E26 E27 E28 E29 E30 E31 E32 E33 E1 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP1" type="car" route="r_parking_la1" depart="600">
+        <stop parkingArea="pa_0" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP2" type="car" route="r_parking_la1" depart="630">
+        <stop parkingArea="pa_0" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP3" type="car" route="r_parking_la1" depart="660">
+        <stop parkingArea="pa_0" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP4" type="car" route="r_parking_la1" depart="690">
+        <stop parkingArea="pa_0" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP5" type="car" route="r_parking_la1" depart="720">
+        <stop parkingArea="pa_0" duration="1800"/>
+    </vehicle>
+
+    <!-- ruta que llega hasta el parking en E6 (Llano amarillo 2) -->
+    <route id="r_parking_la2"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 E0 -542415699#3.55 -542415699#2 -542415699#1 E20 E21 E22 E23 E5 E6 E37 E25 E26 E27 E28 E29 E30 E31 E32 E33 E1 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP6" type="car" route="r_parking_la2" depart="750">
+        <stop parkingArea="pa_1" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP7" type="car" route="r_parking_la2" depart="780">
+        <stop parkingArea="pa_1" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP8" type="car" route="r_parking_la2" depart="810">
+        <stop parkingArea="pa_1" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP9" type="car" route="r_parking_la2" depart="840">
+        <stop parkingArea="pa_1" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP10" type="car" route="r_parking_la2" depart="870">
+        <stop parkingArea="pa_1" duration="1800"/>
+    </vehicle>
+    <!-- Nueva ruta que llega hasta el parking en E9 -->
+    <route id="r_parking_la3"
+           edges="559367542 22690115 22690125#0 22690125#1 22690125#2 668507066#0 668507066#1 668507066#2 1187557612 22740417#5 22740417#0 22740417#1 22740434#0 22740434#1 1187557611 92848439#0 92848439#1 92848439#2 22740446#5 657270567#0 657270567#1 657270567#2 626699047 E0 -542415699#3.55 -542415699#2 -542415699#1 E20 E21 E22 E23 E24 E25 E8 E9 E10 E27 E28 E29 E30 E31 E32 E33 E1 1211925685 669284462 542415708#6 542415708#0 542415708#1 542415708#2 542415708#3 542415708#4 542415702 1443544287#0 1443544287#1 1211925684 1211925690 669284456 92848448#0 92848448#1 E11 E12 E13 92848448#1.170 92848448#1.291 92848448#1.312 92848448#2 92848448#2.33 92848448#3 669871307#0 669871307#1 669871307#2 669871305#0 669871305#1 671267430"/> 
+
+    <!-- Vehículos que siguen r_parking y aparcan en P_E9 (Llano amarillo 3) -->
+
+    <!-- Aparca 10 minutos (600 s) -->
+    <vehicle id="vehP11" type="car" route="r_parking_la3" depart="900">
+        <stop parkingArea="pa_2" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP12" type="car" route="r_parking_la3" depart="930">
+        <stop parkingArea="pa_2" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP13" type="car" route="r_parking_la3" depart="960">
+        <stop parkingArea="pa_2" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP14" type="car" route="r_parking_la3" depart="990">
+        <stop parkingArea="pa_2" duration="1800"/>
+    </vehicle>
+
+    <vehicle id="vehP15" type="car" route="r_parking_la3" depart="1020">
+        <stop parkingArea="pa_2" duration="1800"/>
+    </vehicle>
+
+</routes>

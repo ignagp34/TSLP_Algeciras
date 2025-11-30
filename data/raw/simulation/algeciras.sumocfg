@@ -1,0 +1,27 @@
+<configuration>
+  <input>
+    <net-file value="algeciras.net.xml"/>
+    <route-files value="routes_OPE.rou.xml"/>
+    <additional-files value="detectors.add.xml,parking.add.xml,edgeData.add.xml"/>
+  </input>
+
+  <time>
+    <begin value="0"/>
+    <end value="3600"/>
+  </time>
+
+<output>
+    <!-- info agregada por vehículo -->
+    <tripinfo-output value="../tripinfo_scen2.xml"/>
+
+    <!-- datos FCD (trayectorias) -->
+    <fcd-output value="../fcd_scen2.xml"/>
+</output>
+
+
+  <report>
+    <verbose value="true"/>
+    <no-step-log value="true"/>
+  </report>
+</configuration>
+

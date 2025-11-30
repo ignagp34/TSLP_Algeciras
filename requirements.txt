@@ -1,0 +1,19 @@
+# Núcleo científico
+numpy
+pandas
+seaborn
+
+# Optimización MILP (modelo sencillo en Python)
+pulp
+
+# Algoritmo genético
+deap
+
+# Utilidades para grafos/redes 
+networkx
+
+# Visualización básica (para notebooks y debugging)
+matplotlib
+
+# Notebooks para experimentos
+jupyter

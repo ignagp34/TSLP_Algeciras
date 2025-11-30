@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-11-19T20:48:52.833013+01:00 by Eclipse SUMO netedit 1.25.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+
+    <!-- edge -->
+    <edgeData id="ed_port_scen1"
+              file="../edgeData_port_scen2.xml"
+              freq="60"
+              excludeEmpty="true" />
+    <!-- edge -->
+
+
+</additional>
