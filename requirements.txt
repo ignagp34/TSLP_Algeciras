@@ -2,6 +2,7 @@
 numpy
 pandas
 seaborn
+scipy
 
 # Optimización MILP (modelo sencillo en Python)
 pulp
@@ -14,6 +15,9 @@ networkx
 
 # Visualización básica (para notebooks y debugging)
 matplotlib
+
+# Progress bars
+tqdm
 
 # Notebooks para experimentos
 jupyter
