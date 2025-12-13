@@ -61,7 +61,13 @@ def leer_detector(path_xml: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    archivos = ["det_entrada_norte.xml", "det_salida_sur.xml"]
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+    
+    # Rutas por defecto robustas
+    archivos = [
+        PROJECT_ROOT / "data" / "raw" / "simulation" / "det_entrada_norte.xml",
+        PROJECT_ROOT / "data" / "raw" / "simulation" / "det_salida_sur.xml"
+    ]
 
     dfs = []
     for f in archivos:

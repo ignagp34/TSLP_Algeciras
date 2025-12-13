@@ -239,7 +239,7 @@ def construir_nodos_y_fronteras(df_edges: pd.DataFrame) -> dict:
         "exit_nodes": exit_nodes,
     }
 
-def calcular_big_M(df_flows: pd.DataFrame, factor_seguridad: float = 1.5) -> float:
+def calcular_big_M(df_flows: pd.DataFrame, factor_seguridad: float = 10.0) -> float:
     """
     Calcula una cota M para el MILP a partir de los flujos observados.
 

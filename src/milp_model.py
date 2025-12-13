@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 from .io_utils import leer_critical_edges
 from .config import PROJECT_ROOT
 from .topology_utils import (
@@ -22,6 +22,8 @@ def build_sensor_placement_model(
     weight_scheme: str = "uniform",
     lambda_flow_balance: float = 0.1,
     epsilon_weight: float = 1.0,
+    forced_cycles: Optional[List[List[str]]] = None,
+    forced_cuts: Optional[List[List[str]]] = None,
 ) -> Tuple[LpProblem, Dict[str, LpVariable]]:
 
     """
@@ -51,7 +53,7 @@ def build_sensor_placement_model(
     D_df: pd.DataFrame = milp_inputs.get("D", pd.DataFrame())
     M: float = float(milp_inputs.get("M", 0.0))
 
-    for col in ["scenario", "edge_id", "tau", "flow_veh_h"]:
+    for col in ["scenario", "edge_id", "tau", "flow_veh_s"]:
         if col not in flows.columns:
             raise KeyError("El DataFrame 'flows' debe contener la columna '%s'" % col)
     for col in ["edge_id", "from_node", "to_node"]:
@@ -63,10 +65,9 @@ def build_sensor_placement_model(
     flows_local["tau"] = flows_local["tau"].astype(int)
 
     # Conjunto de arcos candidatos a sensor:
-    # solo aquellos que aparecen en las pseudomediciones (flows)
-    candidate_edge_ids = sorted(flows_local["edge_id"].unique().tolist())
-    # Por seguridad, nos quedamos solo con los que existen en edges
-    candidate_edge_ids = [e for e in candidate_edge_ids if e in edges["edge_id"].values]
+    # PERMITIR CUALQUIER ARCO DE LA RED (para cumplir k-coverage)
+    # aunque no tenga datos de flujo.
+    candidate_edge_ids = sorted(edges["edge_id"].unique().tolist())
 
     # Mapas from/to
     edge_from = dict(zip(edges["edge_id"], edges["from_node"]))
@@ -78,7 +79,7 @@ def build_sensor_placement_model(
 
     for _, row in flows_local.iterrows():
         key = (row["scenario"], int(row["tau"]), row["edge_id"])
-        hat = float(row["flow_veh_h"])
+        hat = float(row["flow_veh_s"])
         meas_hat[key] = hat
 
         if weight_scheme == "uniform":
@@ -103,7 +104,7 @@ def build_sensor_placement_model(
         O_df_local["tau"] = O_df_local["tau"].astype(int)
         for _, row in O_df_local.iterrows():
             key = (row["scenario"], int(row["tau"]), row["node_id"])
-            O_map[key] = float(row["O_veh_h"])
+            O_map[key] = float(row["O_veh_h"]) / 3600.0
 
     D_map: Dict[tuple, float] = {}
     if not D_df.empty:
@@ -111,7 +112,7 @@ def build_sensor_placement_model(
         D_df_local["tau"] = D_df_local["tau"].astype(int)
         for _, row in D_df_local.iterrows():
             key = (row["scenario"], int(row["tau"]), row["node_id"])
-            D_map[key] = float(row["D_veh_h"])
+            D_map[key] = float(row["D_veh_h"]) / 3600.0
 
     # ------------------------------------------------------------------
     # 2) Modelo y variables
@@ -124,13 +125,26 @@ def build_sensor_placement_model(
         for e in candidate_edge_ids
     }
 
-    # f_{a}^{τ,ω} y r_{a}^{τ,ω}
+    # Identificar snapshots activos (scenario, tau)
+    # fr_keys son (scen, tau, edge_id) donde hay medicion
+    active_snapshots = set((k[0], k[1]) for k in fr_keys)
+    all_edge_ids = sorted(edges["edge_id"].unique().tolist()) # Todos los arcos de la red
+
+    # f_{a}^{τ,ω}: Flujo en CUALQUIER arco (para conservar masa)
+    # r_{a}^{τ,ω}: Residuo SOLO en arcos con medición
     f_vars: Dict[tuple, LpVariable] = {}
     r_vars: Dict[tuple, LpVariable] = {}
 
+    # Generar f para todo (snapshot, edge)
+    for (scen, tau) in active_snapshots:
+        for eid in all_edge_ids:
+            f_key = (scen, tau, eid)
+            # Bounds: 0 to infinity (or BigM)
+            f_vars[f_key] = LpVariable("f_%s_%s_%s" % (scen, tau, eid), lowBound=0)
+
+    # Generar r solo para measured keys
     for key in fr_keys:
         scen, tau, edge_id = key
-        f_vars[key] = LpVariable("f_%s_%s_%s" % (scen, tau, edge_id), lowBound=0)
         r_vars[key] = LpVariable("r_%s_%s_%s" % (scen, tau, edge_id), lowBound=0)
 
     # ------------------------------------------------------------------
@@ -139,16 +153,21 @@ def build_sensor_placement_model(
     outgoing = {}  # (scen, tau, node) -> lista de keys de f_vars
     incoming = {}
 
-    for key in fr_keys:
-        scen, tau, edge_id = key
-        i = edge_from.get(edge_id)
-        j = edge_to.get(edge_id)
-        if i is not None:
-            k_out = (scen, tau, i)
-            outgoing.setdefault(k_out, []).append(key)
-        if j is not None:
-            k_in = (scen, tau, j)
-            incoming.setdefault(k_in, []).append(key)
+    # Ahora mapeamos TODOS los arcos para el balance
+    for (scen, tau) in active_snapshots:
+        for eid in all_edge_ids:
+            i = edge_from.get(eid)
+            j = edge_to.get(eid)
+            f_key = (scen, tau, eid) # Key for f_var
+            
+            if i is not None:
+                # Flow leaves i
+                k_out = (scen, tau, i)
+                outgoing.setdefault(k_out, []).append(f_key) # Store variable KEY
+            if j is not None:
+                # Flow enters j
+                k_in = (scen, tau, j)
+                incoming.setdefault(k_in, []).append(f_key)
 
     cons_keys = set(outgoing.keys()) | set(incoming.keys()) | set(O_map.keys()) | set(D_map.keys())
 
@@ -237,10 +256,22 @@ def build_sensor_placement_model(
     # 8) Cortes y ciclos críticos
     # ------------------------------------------------------------------    
     
-    critical_path = PROJECT_ROOT / "data" / "processed" / "critical_edges.txt"
-    critical_edges = leer_critical_edges(critical_path)
-    ciclos_criticos = ciclos_en_edges_criticos(milp_inputs, critical_edges)
-    cortes_criticos = cortes_minimos_en_zona_critica(milp_inputs, critical_edges)
+    # 8) Cortes y ciclos críticos
+    # ------------------------------------------------------------------    
+    
+    if forced_cycles is not None:
+        ciclos_criticos = forced_cycles
+    else:
+        critical_path = PROJECT_ROOT / "data" / "processed" / "critical_edges.txt"
+        critical_edges = leer_critical_edges(critical_path)
+        ciclos_criticos = ciclos_en_edges_criticos(milp_inputs, critical_edges)
+
+    if forced_cuts is not None:
+        cortes_criticos = forced_cuts
+    else:
+        critical_path = PROJECT_ROOT / "data" / "processed" / "critical_edges.txt"
+        critical_edges = leer_critical_edges(critical_path)
+        cortes_criticos = cortes_minimos_en_zona_critica(milp_inputs, critical_edges)
 
     for idx, ciclo in enumerate(ciclos_criticos):
         model += (

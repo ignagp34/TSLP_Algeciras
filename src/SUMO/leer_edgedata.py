@@ -130,7 +130,30 @@ def main():
         print("  python leer_edgedata.py edgeData_file.xml [scenario] [salida_csv]")
         sys.exit(1)
 
-    path_xml = sys.argv[1]
+    path_arg = sys.argv[1]
+    
+    # Resolucion robusta de rutas
+    posibles_rutas = [
+        Path(path_arg),
+        Path(__file__).resolve().parents[2] / path_arg, # Root relative
+        Path(__file__).resolve().parents[2] / "data" / "raw" / path_arg,
+        Path(__file__).resolve().parents[2] / "data" / "raw" / "simulation" / path_arg,
+        Path(__file__).resolve().parents[2] / "data" / "processed" / path_arg,
+    ]
+    
+    path_xml = None
+    for p in posibles_rutas:
+        if p.exists():
+            path_xml = p
+            break
+            
+    if path_xml is None:
+        print(f"Error: No se encontró el archivo '{path_arg}' en ninguna de las rutas esperadas:")
+        for p in posibles_rutas:
+            print(f"  - {p}")
+        sys.exit(1)
+        
+    print(f"Archivo encontrado: {path_xml}")
     scenario = sys.argv[2] if len(sys.argv) >= 3 else None
     salida_csv = sys.argv[3] if len(sys.argv) >= 4 else "edgeData.csv"
 
