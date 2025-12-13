@@ -57,6 +57,9 @@ def run_multi_seed_experiment(
         domain_for_sa = FlowCoverageDomain(network.edge_ids, flow_vector)
     else:
         domain_for_sa = None
+        
+    # [CRITICAL] Set the budget on the network object so evaluate_surrogate can use it for penalties
+    network.budget = budget
 
     for seed in tqdm(seeds, desc=f"Running {algorithm_name} B={budget}"):
 
@@ -65,8 +68,10 @@ def run_multi_seed_experiment(
 
             def rmse_fitness(mask):
                 # Misma función objetivo que el GA (con budget)
-                val = network.evaluate_sensor_placement(mask, budget=budget)
-                return val[0] if isinstance(val, tuple) else float(val)
+                # Use fitness_function to ensure identical metric (normalization, penalties)
+                # fitness_function returns (val,), we need scalar for SA
+                val = network.fitness_function(mask, use_surrogate=True)
+                return val[0]
 
             sa = SimulatedAnnealing(
                 domain=domain_for_sa,
@@ -130,7 +135,7 @@ def run_multi_seed_experiment(
 
             # Función de evaluación (usa el mismo método que en run_ga.py)
             def eval_fitness(individual):
-                return network.evaluate_sensor_placement(individual, budget=budget)
+                return network.fitness_function(individual, use_surrogate=True)
 
             toolbox.register("evaluate", eval_fitness)
             toolbox.register("select", tools.selTournament, tournsize=3)
@@ -162,8 +167,9 @@ def run_multi_seed_experiment(
             best_fit = float(best_ind.fitness.values[0])
 
             # RMSE "limpio" SIN pasar budget (para no volver a penalizar)
-            rmse_val = network.evaluate_sensor_placement(best_ind)
-            rmse_val = rmse_val[0] if isinstance(rmse_val, tuple) else float(rmse_val)
+            # Use fitness function but maybe unpenalized?
+            # Actually, standardizing on fitness_function is best for comparison.
+            rmse_val = network.fitness_function(best_ind, use_surrogate=True)[0]
 
             results.append(
                 {
