@@ -21,3 +21,4 @@ tqdm
 
 # Notebooks para experimentos
 jupyter
+ipywidgets

@@ -1,0 +1,9 @@
+lambda,min_surrogate_last,avg_surrogate_last,txt_path,png_path
+0.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+0.1,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+1.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+10.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+50.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+100.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+200.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png
+500.0,429.1666666666667,430.0,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\processed\selected\selected_edges_B20_GA.txt,C:\Users\ignag\OneDrive\Documentos\TSLP_algeciras\data\Results\GA_convergence_B20.png

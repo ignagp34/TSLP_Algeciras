@@ -44,7 +44,10 @@ class TrafficNetwork:
         critical_edges_path: Optional[Path] = None,
         k_coverage: int = 1,
         milp_inputs: Optional[Dict[str, Any]] = None, # Permitir inyección directa
+        epsilon_weight: float = 1.0,
+        lambda_flow_balance: float = 0.1,
     ):
+
         """
         Inicializa el entorno para el GA.
         Carga datos, topología, y pre-calcula ciclos y cortes críticos.
@@ -63,7 +66,8 @@ class TrafficNetwork:
         self.edges = self.milp_inputs["edges"]
         
         # Identificar tramos únicos y mapeo
-        self.edge_ids: List[str] = sorted(self.edges["edge_id"].unique())
+        # USAR SOLO ARCOS CON FLUJO (flows) PARA EVITAR ARCOS VACÍOS
+        self.edge_ids: List[str] = sorted(self.flows["edge_id"].unique())
         self.num_edges: int = len(self.edge_ids)
         self.edge_map: Dict[str, int] = {eid: i for i, eid in enumerate(self.edge_ids)}
         
@@ -74,7 +78,7 @@ class TrafficNetwork:
         # 2. Configurar "Flow Truth" y Pesos
         self.flow_truth_map = {}
         self.weights_map = {}
-        epsilon = 1.0
+        self.epsilon_weight = epsilon_weight
         
         # Pre-calcular pesos custom
         # Estructura: dict[(scen, tau, edge)] -> float
@@ -82,7 +86,7 @@ class TrafficNetwork:
             key = (row["scenario"], int(row["tau"]), row["edge_id"])
             val = float(row["flow_veh_h"])
             self.flow_truth_map[key] = val
-            self.weights_map[key] = 1.0 / max(abs(val), epsilon)
+            self.weights_map[key] = 1.0 / max(abs(val), self.epsilon_weight)
             
         # 2b. Compute aggregated flow_truth (average over scenarios/time) for SA
         self.flow_truth = np.zeros(self.num_edges)
@@ -113,7 +117,9 @@ class TrafficNetwork:
         print(f"    -> DEBUG First 5 Edges: {self.edge_ids[:5]}")
         
         self.k_coverage = k_coverage
-        
+        self.lambda_flow_balance = float(lambda_flow_balance)
+        self.epsilon_weight = float(epsilon_weight)
+
         # Pre-calcular frecuencias para repair
         self.edge_freq = {eid: 0 for eid in self.edge_ids}
         for s in self.cycles + self.cuts:
@@ -303,8 +309,8 @@ class TrafficNetwork:
                 self.milp_inputs,
                 max_sensors=None,
                 weight_scheme="inv_abs", 
-                lambda_flow_balance=0.1,
-                epsilon_weight=1.0,
+                lambda_flow_balance=self.lambda_flow_balance,
+                epsilon_weight=self.epsilon_weight,
                 forced_cycles=self.cycles,
                 forced_cuts=self.cuts
             )
@@ -437,7 +443,10 @@ class TrafficNetwork:
                 diff = abs(f_tilde[s_idx] - f_prior[s_idx])
                 w = w_vec[s_idx]
                 snapshot_res += w * diff
-            
+                # 4) Slack/balance term 
+                imb = self.A_balance @ f_tilde - b_bal
+                balance_term = self.lambda_flow_balance * float(np.sum(np.abs(imb)))
+                snapshot_res += balance_term
             total_weighted_residual += snapshot_res
 
         avg_residual = total_weighted_residual / k
