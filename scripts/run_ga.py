@@ -34,20 +34,15 @@ def run_ga_experiment(
     tournament_size: int = 2,
     random_seed: int = 42,
     k_coverage: int = 1,
-    validation_freq: int = 0,  # 0 = desactivado (surrogate only)
+    validation_freq: int = 0,  # 0 = desactivado
     milp_inputs: Optional[Dict[str, Any]] = None,
     lambda_flow_balance: float = 100.0,
+    alpha_sensor_error: float = 1.0,
 ):
     """
     Ejecuta un GA para colocación de sensores con presupuesto fijo B.
-    Cambios clave para evitar estancamiento:
-      - individuos iniciales con EXACTAMENTE B sensores
-      - mutación tipo swap (mantiene B)
-      - repair mínimo: solo fuerza B, sin heurísticas agresivas del dominio
-      - p_mutation se interpreta como probabilidad por individuo
     """
 
-    # --- SETUP reproducible ---
     random.seed(random_seed)
     np.random.seed(random_seed)
 
@@ -58,6 +53,7 @@ def run_ga_experiment(
         k_coverage=k_coverage,
         milp_inputs=milp_inputs,
         lambda_flow_balance=lambda_flow_balance,
+        alpha_sensor_error=alpha_sensor_error,
     )
     NUM_EDGES = domain.num_edges
 

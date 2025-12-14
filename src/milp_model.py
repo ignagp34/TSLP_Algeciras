@@ -22,27 +22,32 @@ def build_sensor_placement_model(
     weight_scheme: str = "inv_abs",
     lambda_flow_balance: float = 50,
     epsilon_weight: float = 1.0,
+    alpha_sensor_error: float = 1.0,
     forced_cycles: Optional[List[List[str]]] = None,
     forced_cuts: Optional[List[List[str]]] = None,
 ) -> Tuple[LpProblem, Dict[str, LpVariable]]:
 
     """
-    MILP tipo paper (simplificado):
+    MILP para colocación de sensores.
 
+    Variables:
     - x_a ∈ {0,1}: sensor en el arco a
-    - f_{a}^{τ,ω} ≥ 0: flujo "reconstruido"
+    - f_{a}^{τ,ω} ≥ 0: flujo reconstruido
     - r_{a}^{τ,ω} ≥ 0: residuo absoluto en edges con sensor
-    - z_{i}^{τ,ω} ≥ 0: violación de balance en nodo (acumulación aproximada)
+    - z_{i}^{τ,ω} ≥ 0: violación de balance en nodo
 
-    min  sum_{τ,ω,a} w_{a}^{τ,ω} r_{a}^{τ,ω}
-        + λ * sum_{τ,ω,i} z_{i}^{τ,ω}
+    Función objetivo:
+    min  sum_{τ,ω,a} w_{a}^{τ,ω} r_{a}^{τ,ω} + λ * sum_{τ,ω,i} z_{i}^{τ,ω}
 
-    s.a.
-        - Big-M que liga f, r, x y ˆf
-        - sum x_a = max_sensors
-        - |∑out f - ∑in f - (O-D)| <= z  (balance relajado)
+    Restricciones:
+    - r >= α*f - f_prior - M(1-x)  (constraint 8)
+    - r >= f_prior - α*f - M(1-x)  (constraint 9)
+    - sum x_a = max_sensors
+    - |∑out f - ∑in f - (O-D)| <= z
 
-    Solo se permiten sensores en arcos que tienen pseudomedición en algún (τ,ω).
+    Parámetros:
+    alpha_sensor_error : float
+        Factor de error del sensor (α). Valor 1.0 = sensor perfecto.
     """
     # ------------------------------------------------------------------
     # 1) Extraer datos
@@ -217,14 +222,12 @@ def build_sensor_placement_model(
             r_var <= M * x_var,
             "ResUpper_%s_%s_%s" % (scen, tau, edge_id),
         )
-        # r >= f - hat - M (1 - x)
         model += (
-            r_var >= f_var - hat - M * (1 - x_var),
+            r_var >= alpha_sensor_error * f_var - hat - M * (1 - x_var),
             "ResPos_%s_%s_%s" % (scen, tau, edge_id),
         )
-        # r >= hat - f - M (1 - x)
         model += (
-            r_var >= hat - f_var - M * (1 - x_var),
+            r_var >= hat - alpha_sensor_error * f_var - M * (1 - x_var),
             "ResNeg_%s_%s_%s" % (scen, tau, edge_id),
         )
 
