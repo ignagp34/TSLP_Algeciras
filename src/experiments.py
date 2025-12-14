@@ -140,7 +140,8 @@ def run_multi_seed_experiment(
             toolbox.register("evaluate", eval_fitness)
             toolbox.register("select", tools.selTournament, tournsize=3)
             toolbox.register("mate", tools.cxTwoPoint)
-            toolbox.register("mutate", tools.mutFlipBit, indpb=1.0 / NUM_EDGES)
+            p_mut = kwargs.get("p_mutation", 1.0 / NUM_EDGES)
+            toolbox.register("mutate", tools.mutFlipBit, indpb=p_mut)
 
             pop_size = kwargs.get("population_size", 50)
             n_gen = kwargs.get("max_generations", 50)
