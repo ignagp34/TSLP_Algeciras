@@ -36,6 +36,7 @@ def run_ga_experiment(
     k_coverage: int = 1,
     validation_freq: int = 0,  # 0 = desactivado (surrogate only)
     milp_inputs: Optional[Dict[str, Any]] = None,
+    lambda_flow_balance: float = 100.0,
 ):
     """
     Ejecuta un GA para colocación de sensores con presupuesto fijo B.
@@ -56,6 +57,7 @@ def run_ga_experiment(
         net_xml_path=net_xml_path,
         k_coverage=k_coverage,
         milp_inputs=milp_inputs,
+        lambda_flow_balance=lambda_flow_balance,
     )
     NUM_EDGES = domain.num_edges
 

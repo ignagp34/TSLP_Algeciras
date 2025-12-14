@@ -19,7 +19,7 @@ from pulp import (
 def build_sensor_placement_model(
     milp_inputs: Dict[str, Any],
     max_sensors: Optional[int] = 20,
-    weight_scheme: str = "uniform",
+    weight_scheme: str = "inv_abs",
     lambda_flow_balance: float = 0.1,
     epsilon_weight: float = 1.0,
     forced_cycles: Optional[List[List[str]]] = None,
@@ -65,9 +65,8 @@ def build_sensor_placement_model(
     flows_local["tau"] = flows_local["tau"].astype(int)
 
     # Conjunto de arcos candidatos a sensor:
-    # PERMITIR CUALQUIER ARCO DE LA RED (para cumplir k-coverage)
-    # aunque no tenga datos de flujo.
-    candidate_edge_ids = sorted(edges["edge_id"].unique().tolist())
+    # SOLO ARCOS CON FLUJO HISTÓRICO (evitar arcos vacíos)
+    candidate_edge_ids = sorted(flows_local["edge_id"].unique().tolist())
 
     # Mapas from/to
     edge_from = dict(zip(edges["edge_id"], edges["from_node"]))
