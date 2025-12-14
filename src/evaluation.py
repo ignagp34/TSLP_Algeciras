@@ -214,9 +214,9 @@ def compare_milp_vs_ga(
 
         plt.figure(figsize=(5, 4))
         plt.bar(labels, covs)
-        plt.ylabel("Coverage ratio (ALL)")
+        plt.ylabel("Coverage Ratio (ALL)")
         plt.ylim(0, max(covs) * 1.1 if max(covs) > 0 else 1.0)
-        plt.title(f"Comparación MILP vs GA (B = {B})")
+        plt.title(f"MILP vs GA Comparison (B = {B})")
         plt.grid(axis="y", alpha=0.3)
 
         fig_path = results_dir / f"comparison_MILP_vs_GA_B{B}.png"
