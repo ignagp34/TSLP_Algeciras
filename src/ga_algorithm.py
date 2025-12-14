@@ -1,18 +1,9 @@
 # src/ga_algorithm.py
 
 """
-ga_algorithm.py
+Clase TrafficNetwork para evaluación de configuraciones de sensores.
 
-Definición de la clase TrafficNetwork utilizada por el GA y SA
-para evaluar configuraciones de sensores, ADAPTADA a la metodología del paper.
-
-Metodología:
-  - Fitness: Weighted L1-norm objective function.
-  - Evaluación Híbrida:
-      * Exact (LP): Resuelve el problema de optimización completo.
-      * Surrogate (Fast): Aproximación heurística rápida usando LSQ para proyección de flujo.
-  - Operadores:
-      * Repair: Asegura presupuesto y cobertura (k+1 coverage).
+Implementa evaluación exacta (LP) y surrogate (heurística rápida).
 """
 
 from pathlib import Path
@@ -43,14 +34,14 @@ class TrafficNetwork:
         net_xml_path: Optional[NetPathLike] = None,
         critical_edges_path: Optional[Path] = None,
         k_coverage: int = 1,
-        milp_inputs: Optional[Dict[str, Any]] = None, # Permitir inyección directa
+        milp_inputs: Optional[Dict[str, Any]] = None,
         epsilon_weight: float = 1.0,
         lambda_flow_balance: float = 0.1,
+        alpha_sensor_error: float = 1.0,
     ):
 
         """
         Inicializa el entorno para el GA.
-        Carga datos, topología, y pre-calcula ciclos y cortes críticos.
         """
         print("--- [TrafficNetwork] Inicializando ---")
         
@@ -119,6 +110,7 @@ class TrafficNetwork:
         self.k_coverage = k_coverage
         self.lambda_flow_balance = float(lambda_flow_balance)
         self.epsilon_weight = float(epsilon_weight)
+        self.alpha_sensor_error = float(alpha_sensor_error)
 
         # Pre-calcular frecuencias para repair
         self.edge_freq = {eid: 0 for eid in self.edge_ids}
@@ -172,7 +164,7 @@ class TrafficNetwork:
 
     def _build_matrices_for_surrogate(self):
         """
-        Construye la matriz de conservación A_cons para el LSQ surrogate.
+        Construye la matriz de conservación para el surrogate.
         """
         G = nx.DiGraph()
         for eid in self.edge_ids:
@@ -311,6 +303,7 @@ class TrafficNetwork:
                 weight_scheme="inv_abs", 
                 lambda_flow_balance=self.lambda_flow_balance,
                 epsilon_weight=self.epsilon_weight,
+                alpha_sensor_error=self.alpha_sensor_error,
                 forced_cycles=self.cycles,
                 forced_cuts=self.cuts
             )
@@ -323,11 +316,9 @@ class TrafficNetwork:
         
         model, x_vars = self._get_cached_exact_model()
         
-        # Update variable bounds to fix them to the individual's values
         for i, eid in enumerate(self.edge_ids):
             if eid in x_vars:
                 val = individual[i]
-                # Modifying bounds is faster than re-creating variables
                 x_vars[eid].lowBound = val
                 x_vars[eid].upBound = val
         
@@ -335,21 +326,11 @@ class TrafficNetwork:
         model.solve(solver)
         
         if model.status != 1: return 1e9
-        if model.status != 1: return 1e9
         return value(model.objective)
 
     def evaluate_surrogate(self, individual: List[int], sample_size: int = 5) -> float:
         """
-        Evaluación Surrogate con ITERATIVE NODAL BALANCING (Heurística O(N)).
-        Reemplaza a lsq_linear para extrema velocidad y robustez ante "congestión" (infeasibility).
-        
-        Algoritmo (para un snapshot):
-          1. f_tilde = f_prior
-          2. Repetir k veces (o hasta convergencia suave):
-             Para cada nodo n:
-                calc imbalance I = sum(f_in) - sum(f_out) + net_source(n)
-                repartir error I entre arcos incidentes para reducirlo.
-          3. Calcular residual sobre sensores.
+        Evaluación surrogate con balanceo nodal iterativo.
         """
         if sum(individual) == 0: return 1e9
         sensor_idxs = [i for i, x in enumerate(individual) if x == 1]
@@ -363,20 +344,7 @@ class TrafficNetwork:
         
         # Pre-computar estructura de adyacencia rápida si no existe
         if not hasattr(self, "_adj_struct"):
-            # self.node_map ya existe.
-            # Necesitamos: node_idx -> list of (edge_idx, direction +1/-1)
-            # direction: +1 sale (out) -> reduce balance (out increases => total balance decreases?)
-            # balance = sum(in) - sum(out) + source.
-            # if edge j enters node (direction -1 in A_matrix): contributes +f_j
-            # if edge j leaves node (direction +1 in A_matrix): contributes -f_j
-            # Wait, my A matrix definition was: +1 sale, -1 entra.
-            # A_row * f = sum(f_out) - sum(f_in) = b (source - sink)
-            # Imbalance = sum(f_out) - sum(f_in) - b.
-            # Queremos Imbalance = 0.
-            
             self._adj_struct = [[] for _ in range(len(self.node_ids))]
-            # Iterar A_balance sparse o edges
-            # A_balance es denso ahora. Usar edges es mejor.
             
             for idx_e, row in self.edges.iterrows():
                 eid = row["edge_id"]
@@ -388,11 +356,11 @@ class TrafficNetwork:
                 
                 if u in self.node_map:
                     u_idx = self.node_map[u]
-                    self._adj_struct[u_idx].append((j, 1.0)) # Sale
+                    self._adj_struct[u_idx].append((j, 1.0))
                 
                 if v in self.node_map:
                     v_idx = self.node_map[v]
-                    self._adj_struct[v_idx].append((j, -1.0)) # Entra
+                    self._adj_struct[v_idx].append((j, -1.0))
 
         adj = self._adj_struct
         num_nodes = len(adj)
@@ -402,17 +370,10 @@ class TrafficNetwork:
             key = self.snapshot_keys[idx_snap]
             b_bal, f_prior, w_vec = self.surrogate_data[key]
             
-            # 1. Init f_tilde con f_prior
             f_tilde = f_prior.copy()
             
-            # 2. Iterative Balancing (5 passes)
-            # Esto difunde el error de conservación localmente
-            # Maneja bien la congestión (donde in != out) suavizándola
             for _ in range(5):
-                # Calcular imbalances y corregir nodo a nodo
-                # (Gauss-Seidel style update)
                 for n_idx in range(num_nodes):
-                    # Calc current imbalance: sum(sign * f) - b
                     imbalance = -b_bal[n_idx]
                     incident_edges = adj[n_idx]
                     if not incident_edges: continue
@@ -420,30 +381,17 @@ class TrafficNetwork:
                     for (e_idx, sign) in incident_edges:
                         imbalance += sign * f_tilde[e_idx]
                     
-                    # Si imbalance != 0, distribuir corrección
-                    # Correction delta para cada edge: -sign * (imbalance / degrees)
-                    # Relax factor 0.5 para estabilidad
                     if abs(imbalance) > 1e-4:
                         delta = -(imbalance * 0.5) / len(incident_edges)
                         for (e_idx, sign) in incident_edges:
-                            # Apply delta * sign?
-                            # Queremos reducir imbalance.
-                            # New f = f + correction
-                            # New imbalance = Old + sum(sign * correction)
-                            # = Old + sum(sign * sign * delta) = Old + sum(delta) = Old + N*delta
-                            # Queremos New = 0 => N*delta = -Old => delta = -Old/N. Correcto.
-                            
                             f_tilde[e_idx] += sign * delta
-                            # Proyectar a >= 0
                             if f_tilde[e_idx] < 0: f_tilde[e_idx] = 0
             
-            # 3. Calc fitness
             snapshot_res = 0.0
             for s_idx in sensor_idxs:
                 diff = abs(f_tilde[s_idx] - f_prior[s_idx])
                 w = w_vec[s_idx]
                 snapshot_res += w * diff
-                # 4) Slack/balance term 
                 imb = self.A_balance @ f_tilde - b_bal
                 balance_term = self.lambda_flow_balance * float(np.sum(np.abs(imb)))
                 snapshot_res += balance_term
@@ -452,26 +400,17 @@ class TrafficNetwork:
         avg_residual = total_weighted_residual / k
         base_fitness = avg_residual * n_snapshots
         
-        # --- PENALTY FOR UNSATISFIED CONSTRAINTS ---
-        # The surrogate must guide the GA towards feasible regions.
-        # Check cycles and cuts.
-        
         active_set_check = set(self.edge_ids[i] for i in sensor_idxs)
         violations = 0
         total_missing = 0
         
-        # Check both cycles and cuts
         for component_edges in (self.cycles + self.cuts):
-            # Count sensors in this component
             count = sum(1 for e in component_edges if e in active_set_check)
             needed = (self.k_coverage + 1)
             if count < needed:
                 violations += 1
                 total_missing += (needed - count)
         
-        # Penalty calculation
-        # If violations > 0, we add a huge penalty.
-        # We scale it by total_missing to provide gradient.
         penalty = 0.0
         if violations > 0:
             penalty = 1e6 + (total_missing * 1000.0)
