@@ -20,7 +20,7 @@ def build_sensor_placement_model(
     milp_inputs: Dict[str, Any],
     max_sensors: Optional[int] = 20,
     weight_scheme: str = "inv_abs",
-    lambda_flow_balance: float = 0.1,
+    lambda_flow_balance: float = 50,
     epsilon_weight: float = 1.0,
     forced_cycles: Optional[List[List[str]]] = None,
     forced_cuts: Optional[List[List[str]]] = None,
