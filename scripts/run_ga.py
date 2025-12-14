@@ -29,7 +29,7 @@ def run_ga_experiment(
     population_size: int = 50,
     max_generations: int = 50,
     p_crossover: float = 0.8,
-    p_mutation: float | None = None,  # prob. de mutar el individuo (NO por-bit)
+    p_mutation: float | None = None,  
     sensor_budget: int = 20,
     tournament_size: int = 2,
     random_seed: int = 42,
@@ -57,7 +57,7 @@ def run_ga_experiment(
     )
     NUM_EDGES = domain.num_edges
 
-    # Probabilidad por individuo (recomendado: 0.2 - 0.6)
+
     if p_mutation is None:
         p_mutation = 0.3
 
@@ -70,7 +70,7 @@ def run_ga_experiment(
     )
 
     # --- DEAP SETUP ---
-    # Evita re-definiciones al re-ejecutar en notebooks / sesiones interactivas
+
     if hasattr(creator, "FitnessMin"):
         del creator.FitnessMin
     if hasattr(creator, "Individual"):
@@ -81,25 +81,23 @@ def run_ga_experiment(
 
     toolbox = base.Toolbox()
 
-    # =========================================================
-    # 1) Repair mínimo: SOLO asegurar exactamente B sensores
-    # =========================================================
+
     def repair_budget(individual: creator.Individual) -> creator.Individual:
         """Fuerza que el individuo tenga exactamente sensor_budget unos."""
         ones = [i for i, b in enumerate(individual) if b == 1]
         zeros = [i for i, b in enumerate(individual) if b == 0]
 
-        # Si sobran sensores, apagamos aleatoriamente
+        
         if len(ones) > sensor_budget:
             to_off = random.sample(ones, len(ones) - sensor_budget)
             for i in to_off:
                 individual[i] = 0
 
-        # Si faltan sensores, encendemos aleatoriamente
+        
         elif len(ones) < sensor_budget:
             need = sensor_budget - len(ones)
             if need > len(zeros):
-                # Caso extremo (no debería pasar), pero por seguridad
+                
                 need = len(zeros)
             to_on = random.sample(zeros, need)
             for i in to_on:
@@ -107,9 +105,7 @@ def run_ga_experiment(
 
         return individual
 
-    # =========================================================
-    # 2) Inicialización: individuos con EXACTAMENTE B sensores
-    # =========================================================
+
     def make_budget_individual() -> creator.Individual:
         ind = [0] * NUM_EDGES
         for idx in random.sample(range(NUM_EDGES), sensor_budget):
@@ -123,9 +119,7 @@ def run_ga_experiment(
             repair_budget(ind)
         return pop
 
-    # =========================================================
-    # 3) Mutación swap: mantiene B constante y explora bien
-    # =========================================================
+
     def mutate_swap(individual: creator.Individual, n_swaps: int = 2):
         """
         Realiza n_swaps intercambios: apaga un 1 y enciende un 0.
@@ -151,9 +145,7 @@ def run_ga_experiment(
 
         return (individual,)
 
-    # =========================================================
-    # 4) Evaluación: surrogate por defecto
-    # =========================================================
+
     def evaluate_surrogate(ind):
         return domain.fitness_function(ind, use_surrogate=True)
 
@@ -161,7 +153,7 @@ def run_ga_experiment(
         return domain.fitness_function(ind, use_surrogate=False)
 
     # --- Operadores DEAP ---
-    toolbox.register("mate", tools.cxTwoPoint)  # cruce simple
+    toolbox.register("mate", tools.cxTwoPoint)  
     toolbox.register("mutate", mutate_swap, n_swaps=2)
     toolbox.register("select", tools.selTournament, tournsize=tournament_size)
     toolbox.register("evaluate", evaluate_surrogate)
@@ -205,7 +197,7 @@ def run_ga_experiment(
         for c1, c2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < p_crossover:
                 toolbox.mate(c1, c2)
-                # tras cruce puede romper presupuesto => repair mínimo
+                
                 repair_budget(c1)
                 repair_budget(c2)
                 if hasattr(c1.fitness, "values"):
@@ -213,7 +205,7 @@ def run_ga_experiment(
                 if hasattr(c2.fitness, "values"):
                     del c2.fitness.values
 
-        # 4) Mutación (probabilidad por individuo)
+        # 4) Mutación 
         for mutant in offspring:
             if random.random() < p_mutation:
                 toolbox.mutate(mutant)
@@ -221,15 +213,14 @@ def run_ga_experiment(
                 if hasattr(mutant.fitness, "values"):
                     del mutant.fitness.values
 
-        # 5) Evaluación (solo los inválidos)
+        # 5) Evaluación 
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
         for ind in invalid_ind:
             ind.fitness.values = toolbox.evaluate(ind)
 
-        # 6) Revalidación exacta opcional (si algún día quieres)
+        # 6) Revalidación exacta opcional 
         if validation_freq and (gen % validation_freq == 0):
-            # OJO: esto puede ser caro. Úsalo solo si lo necesitas.
-            # Ejemplo: validar el mejor individuo actual con exact.
+
             current_best = tools.selBest(offspring + elites, 1)[0]
             _ = toolbox.evaluate_exact(current_best)
 

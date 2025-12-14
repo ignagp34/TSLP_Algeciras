@@ -147,9 +147,6 @@ class TrafficNetwork:
             f_vec = np.zeros(self.num_edges)
             w_vec = np.zeros(self.num_edges)
             
-            # Optimización: acceder al df filtrado es lento.
-            # Mejor: iterar sobre 'self.flow_truth_map' que ya es un dict
-            # Pero iterar edges es 2500 iteraciones.
             # Vectorizado:
             for idx, eid in enumerate(self.edge_ids):
                 # flow_truth_map tiene (sc, t, eid)
@@ -225,11 +222,7 @@ class TrafficNetwork:
 
         for (sc, t) in keys_st:
             b = np.zeros(len(self.node_ids))
-            
-            # Sumar O
-            # Iterar nodos es rápido (pocos nodos)
-            # O mejor: iterar solo entries/exits conocidos?
-            # Iteramos entries
+
             for nid in self.milp_inputs.get("entry_nodes", []):
                 val = O_dict.get((sc, t, nid), 0.0)
                 if val > 0 and nid in self.node_map:
@@ -243,9 +236,6 @@ class TrafficNetwork:
             self.b_balance_map[(sc, t)] = b
 
 
-    # ------------------------------------------------------------------ #
-    #  REPAIR OPERATOR
-    # ------------------------------------------------------------------ #
     def calculate_benefit_cost_ratio(self, edge_id: str, gamma1: float = 1.0, gamma2: float = 1.0) -> float:
         freq = self.edge_freq.get(edge_id, 0)
         w_bar = self.avg_weights.get(edge_id, 0.0)
@@ -291,9 +281,7 @@ class TrafficNetwork:
                 
         return individual
 
-    # ------------------------------------------------------------------ #
-    #  EVALUATION: Exact vs Surrogate
-    # ------------------------------------------------------------------ #
+
     def _get_cached_exact_model(self):
         if not hasattr(self, "_cached_model"):
             print("    -> Building EXACT model (cached)...")

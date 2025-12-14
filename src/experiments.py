@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 from tqdm import tqdm
-import random  # para el GA
+import random  
 
 from src.ga_algorithm import TrafficNetwork
 from src.sa_algorithm import SimulatedAnnealing, FlowCoverageDomain
@@ -48,17 +48,13 @@ def run_multi_seed_experiment(
     """
     results = []
 
-    # ------------------------------------------------------------------
-    # Dominio para SA: mismo orden de edge_ids que GA.
-    # Lo usamos solo como "portador" de edge_ids y tamaño.
-    # ------------------------------------------------------------------
     if algorithm_name == "SA":
         flow_vector = np.asarray(network.flow_truth, dtype=float)
         domain_for_sa = FlowCoverageDomain(network.edge_ids, flow_vector)
     else:
         domain_for_sa = None
         
-    # [CRITICAL] Set the budget on the network object so evaluate_surrogate can use it for penalties
+
     network.budget = budget
 
     for seed in tqdm(seeds, desc=f"Running {algorithm_name} B={budget}"):
