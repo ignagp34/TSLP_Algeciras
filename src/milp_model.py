@@ -70,7 +70,6 @@ def build_sensor_placement_model(
     flows_local["tau"] = flows_local["tau"].astype(int)
 
     # Conjunto de arcos candidatos a sensor:
-    # SOLO ARCOS CON FLUJO HISTÓRICO (evitar arcos vacíos)
     candidate_edge_ids = sorted(flows_local["edge_id"].unique().tolist())
 
     # Mapas from/to
@@ -93,7 +92,6 @@ def build_sensor_placement_model(
             denom = max(abs(hat), epsilon_weight)
             w = 1.0 / denom
         else:
-            # por defecto, si ponemos algo raro, dejamos 1.0
             w = 1.0
 
         weights[key] = w
@@ -254,13 +252,7 @@ def build_sensor_placement_model(
             rhs - lhs <= z_var,
             "FlowBalNeg_%s_%s_%s" % (scen, tau, node_id),
         )
-    # ------------------------------------------------------------------
-    # 8) Cortes y ciclos críticos
-    # ------------------------------------------------------------------    
-    
-    # 8) Cortes y ciclos críticos
-    # ------------------------------------------------------------------    
-    
+
     if forced_cycles is not None:
         ciclos_criticos = forced_cycles
     else:

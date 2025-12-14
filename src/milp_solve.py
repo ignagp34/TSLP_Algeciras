@@ -56,17 +56,16 @@ def solve_sensor_placement(
         - 'selected_edges': lista de edge_id con x_a = 1
         - 'x_values': diccionario {edge_id: valor de x_a}
     """
-    # 1) Cargar datos si no se han pasado
     if milp_inputs is None:
         milp_inputs = load_milp_inputs()
 
-    # 2) Construir modelo (MILP tipo paper simplificado)
+    # 2) Construir modelo 
     model, x_vars = build_sensor_placement_model(
         milp_inputs,
         max_sensors=max_sensors,
-        weight_scheme="inv_abs",   # usamos la fórmula práctica
-        lambda_flow_balance=0.1,   # como antes
-        epsilon_weight=1.0,        # puedes probar también 10.0 etc.
+        weight_scheme="inv_abs",   
+        lambda_flow_balance=0.1,   
+        epsilon_weight=1.0,        
     )
 
 
